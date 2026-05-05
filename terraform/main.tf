@@ -7,6 +7,8 @@ resource "aws_instance" "devops_server" {
   instance_type = "t3.micro"
   key_name      = var.key_name
 
+  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
+
   security_groups = [aws_security_group.devops_sg.name]
 
   tags = {
@@ -50,14 +52,23 @@ resource "aws_security_group" "devops_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = var.allowed_cidr_blocks
   }
 
+  # App
   ingress {
     from_port   = 8000
+    to_port     = 8000
+    protocol    = "tcp"
+    cidr_blocks = var.allowed_cidr_blocks
+  }
+
+  # Prometheus
+  ingress {
+    from_port   = 9090
     to_port     = 9090
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = var.allowed_cidr_blocks
   }
 
   egress {

@@ -1,5 +1,5 @@
 provider "aws" {
-  region = var.aws_region
+  region = "ap-southeast-1"
 }
 
 data "aws_ami" "amazon_linux" {
@@ -7,35 +7,38 @@ data "aws_ami" "amazon_linux" {
   owners      = ["amazon"]
 
   filter {
-    name   = "name"                         # is like a Key, and values is like a Value
-    values = ["amzn2-ami-hvm-*-x86_64-gp2"] # Because Amazon Web Services has hundreds of AMIs
+    name   = "name"
+    values = ["al2023-ami-*-x86_64"]
   }
+}
+
+resource "aws_security_group" "web_sg" {
+    name = "web-sg"
+
+    ingress {
+        from_port = 22
+        to_port = 22
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    egress {
+        from_port = 0
+        to_port = 0
+        protocol = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+  
 }
 
 resource "aws_instance" "my_server" {
   ami           = data.aws_ami.amazon_linux.id
   instance_type = "t3.micro"
 
-  key_name = "terraform-key"
+  vpc_security_group_ids = [aws_security_group.web_sg.id]
 
-  vpc_security_group_ids = [aws_security_group.allow_ssh.id]
-}
-
-resource "aws_security_group" "allow_ssh" {
-  name = "allow_ssh"
-
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["58.8.249.244/32"]
+  tags = {
+    Name = "my-terraform-server"
   }
-}
-
-resource "aws_s3_bucket" "my_bucket" {
-  bucket = "ss23-terraform-lab-1a"
-}
-
-resource "aws_s3_bucket" "imported_bucket" {
-  bucket = "ss23-manual-bucket-xyz"
 }
