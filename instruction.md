@@ -36,3 +36,18 @@ With it → real-time logs
 `--restart always` Restart automatically
 `docker stats` CPU %, Memory usage, Network I/O
 `watch -n 5 curl http://YOUR_PUBLIC_IP:8000/health` Create a script locally: Every 5 seconds = check uptime
+
+**Terraform**
+On one command(`apply`) with `-var=` Terraform loads all .tf files in the directory together as ONE configuration.
+BUT after command finishes Terraform process exits.
+The runtime variable assignment disappears. (`key_name = var.key_name`)
+When you run terraform destroy
+Terraform still:
+ - loads all .tf files
+ - parses resources
+ - evaluates variables
+ - builds dependency graph
+ - then deletes resources
+
+So if your config contains: `key_name = var.key_name`
+Terraform still needs: `var.key_name`

@@ -21,10 +21,6 @@ resource "aws_instance" "devops_server" {
 
   security_groups = [aws_security_group.devops_sg.name]
 
-  tags = {
-    Name = "devops-terraform-server"
-  }
-
   user_data = <<-EOF
                 #!/bin/bash
                 # Exit immediately if any command fails
@@ -40,19 +36,29 @@ resource "aws_instance" "devops_server" {
                 # Install AWS CLI v2
                 apt install -y unzip curl
                 
-                # keeps home directory clean, safe for temporary installs
+                # Keeps home directory clean, safe for temporary installs
                 cd /tmp
                 
                 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
                 unzip awscliv2.zip
                 ./aws/install
                 
-                # Add ubuntu to docker group
-                usermod -aG docker ubuntu
+                # "--password-stdin" avoids exposing password
+                aws ecr get-login-password --region ap-southeast-1 \
+                | docker login --username AWS --password-stdin ${var.ecr_uri}
+
+                # Normally with "latest" Docker does NOT always auto-refresh tags. Might needs "pull, stop, rm, run" to guarantee newest image
+                docker run -d -p 8000:8000 \
+                --restart always \
+                ${var.ecr_uri}:latest
                 
                 rm -rf /tmp/aws /tmp/awscliv2.zip
 
                 EOF
+  
+  tags = {
+    Name = "ephemeral-devops-server"
+  }
 }
 
 resource "aws_security_group" "devops_sg" {

@@ -8,5 +8,10 @@ variable "allowed_cidr_blocks" {
   type        = list(string)
 
   default = ["58.8.249.70/32"]
+}
 
+variable "ecr_uri" {
+  description = "ECR image URI"
+  type = string
+  
 }
