@@ -1,6 +1,7 @@
 variable "key_name" {
   description = "EC2 key pair name"
   type        = string
+  
 
 }
 
@@ -8,11 +9,13 @@ variable "key_name" {
 variable "ecr_uri" {
   description = "ECR image URI"
   type        = string
+  
 
 }
 
 variable "ecr_registry" {
   description = "ECR registry"
-  type        = string 
+  type        = string
+  
 
 }
