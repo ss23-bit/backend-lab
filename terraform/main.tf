@@ -26,11 +26,6 @@ resource "aws_instance" "devops_server" {
                 # Exit immediately if any command fails
                 set -e
                 
-                # debugging automate
-                exec > /var/log/user-data.log 2>&1
-                # print commands before executing them. pair with debugging
-                set -x
-                
                 apt update -y
                 
                 apt install -y docker.io
