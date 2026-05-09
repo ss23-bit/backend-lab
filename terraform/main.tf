@@ -8,7 +8,12 @@ data "aws_ami" "amazon_linux" {
 
   filter {
     name   = "name"
-    values = ["al2023-ami-*-x86_64"]
+    values = ["al2023-ami-2023*-kernel-*-x86_64"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
   }
 }
 
@@ -19,43 +24,32 @@ resource "aws_instance" "devops_server" {
 
   iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
 
-  security_groups = [aws_security_group.devops_sg.name]
+  vpc_security_group_ids = [aws_security_group.devops_sg.id]
 
   user_data = <<-EOF
                 #!/bin/bash
+                exec > /var/log/user-data.log 2>&1
                 # Exit immediately if any command fails
                 set -e
                 
-                apt update -y
+                dnf update -y
                 
-                apt install -y docker.io
+                dnf install -y docker
                 
                 systemctl start docker
                 systemctl enable docker
-                
-                # Install AWS CLI v2
-                apt install -y unzip curl
-                
-                # Keeps home directory clean, safe for temporary installs
-                cd /tmp
-                
-                curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-                unzip awscliv2.zip
-                ./aws/install
                 
                 REGISTRY=${var.ecr_registry}
                 IMAGE=${var.ecr_uri}:latest
 
                 # "--password-stdin" avoids exposing password
                 aws ecr get-login-password --region ap-southeast-1 \
-                | docker login --username AWS --password-stdin REGISTRY
+                | docker login --username AWS --password-stdin $REGISTRY
                 
-                docker pull IMAGE
+                docker pull $IMAGE
 
                 # Normally with "latest" Docker does NOT always auto-refresh tags. Might needs "pull, stop, rm, run" to guarantee newest image
-                docker run -d -p 8000:8000 --restart always IMAGE
-                
-                rm -rf /tmp/aws /tmp/awscliv2.zip
+                docker run -d -p 8000:8000 --restart always $IMAGE               
 
                 EOF
 
