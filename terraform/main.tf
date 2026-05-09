@@ -45,7 +45,7 @@ resource "aws_instance" "devops_server" {
 
                 # "--password-stdin" avoids exposing password
                 aws ecr get-login-password --region ap-southeast-1 \
-                | docker login --username AWS --password-stdin ${ecr_uri%/*}
+                | docker login --username AWS --password-stdin $${ecr_uri%/*}
 
                 IMAGE=${ecr.uri}:latest
                 
