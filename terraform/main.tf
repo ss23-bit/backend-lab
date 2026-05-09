@@ -42,21 +42,17 @@ resource "aws_instance" "devops_server" {
                 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
                 unzip awscliv2.zip
                 ./aws/install
-                
-                # cut from the / part onwards
-                REGISTRY=$(echo "$(var.ecr.uri)" | cut -d'/' -f1)
-
 
                 # "--password-stdin" avoids exposing password
                 aws ecr get-login-password --region ap-southeast-1 \
-                | docker login --username AWS --password-stdin $REGISTRY
+                | docker login --username AWS --password-stdin ${ecr_uri%/*}
 
-                docker pull $REGISTRY:latest
+                IMAGE=${ecr.uri}:latest
+                
+                docker pull IMAGE
 
                 # Normally with "latest" Docker does NOT always auto-refresh tags. Might needs "pull, stop, rm, run" to guarantee newest image
-                docker run -d -p 8000:8000 \
-                --restart always \
-                $REGISTRY:latest
+                docker run -d -p 8000:8000 --restart always IMAGE
                 
                 rm -rf /tmp/aws /tmp/awscliv2.zip
 
