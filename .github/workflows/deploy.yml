@@ -81,7 +81,7 @@ jobs:
     
       # Destroy infra
     - name: Terraform Destroy
-      # even if previous steps is fail.
+      # even if previous steps is fail
       if: always()
       run: |
         terraform -chdir=terraform destroy -auto-approve \
