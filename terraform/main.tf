@@ -51,6 +51,8 @@ resource "aws_instance" "devops_server" {
                 aws ecr get-login-password --region ap-southeast-1 \
                 | docker login --username AWS --password-stdin $REGISTRY
 
+                docker pull $REGISTRY:latest
+
                 # Normally with "latest" Docker does NOT always auto-refresh tags. Might needs "pull, stop, rm, run" to guarantee newest image
                 docker run -d -p 8000:8000 \
                 --restart always \
@@ -59,7 +61,7 @@ resource "aws_instance" "devops_server" {
                 rm -rf /tmp/aws /tmp/awscliv2.zip
 
                 EOF
-  
+
   tags = {
     Name = "ephemeral-devops-server"
   }
