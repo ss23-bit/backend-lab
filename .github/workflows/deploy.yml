@@ -56,8 +56,9 @@ jobs:
       run: |
         terraform -chdir=terraform apply -auto-approve \
           -var="key_name=${{ secrets.KEY_NAME }}" \
-          -var="ecr_uri=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-southeast-1.amazonaws.com/devops-api"
-    
+          -var="ecr_uri=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-southeast-1.amazonaws.com/devops-api" \
+          -var="ecr_registry=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-southeast-1.amazonaws.com"
+
     - name: get public ip
       id: ip
       run: |
