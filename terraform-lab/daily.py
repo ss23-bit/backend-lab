@@ -34,13 +34,13 @@ def check_alerts(levels, errors, error_threshold=2, warning_threshold=2):
     if levels.get("WARNING", 0) >= warning_threshold:
         print(f"WARNING spike detected")
 
-logs = [
-    "2026-05-02T10:00:01Z ERROR Disk full",
-    "2026-05-02T10:01:10Z INFO User login",
-    "2026-05-02T10:02:33Z ERROR Disk full",
-    "2026-05-03T09:15:22Z WARNING CPU high",
-]
-
+try:    
+    with open("app_logs.txt") as f:
+        logs = [line.strip() for line in f]
+except FileNotFoundError:
+    print(f"Log File not found")
+    exit()        
+    
 levels, errors = analyze_logs(logs)
 print(f"Levels: {levels}")
 print(f"Errors: {errors}")
