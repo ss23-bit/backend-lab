@@ -14,7 +14,7 @@ def check_not_found():
     )
 
 @router.get("/todo")
-def get_crud(user = Depends(verify_access_token)):
+def get_todo(user = Depends(verify_access_token)):
     cursor.execute(
         "SELECT * FROM todos WHERE username = ?",
         (user["username"],)
@@ -31,7 +31,7 @@ def get_crud(user = Depends(verify_access_token)):
     }
 
 @router.post("/todo", status_code=status.HTTP_201_CREATED)
-def create_crud(todo: Todo, user = Depends(verify_access_token)):
+def create_todo(todo: Todo, user = Depends(verify_access_token)):
     cursor.execute(
         "INSERT INTO todos (title, username) VALUES (?, ?)",
         (todo.title, user["username"])
@@ -44,7 +44,7 @@ def create_crud(todo: Todo, user = Depends(verify_access_token)):
     }
 
 @router.put("/todo/{todo_id}")
-def update_crud(todo_id: int, todo: Todo, user = Depends(verify_access_token)):
+def update_todo(todo_id: int, todo: Todo, user = Depends(verify_access_token)):
     cursor.execute(
         "UPDATE todos SET title = ? WHERE id = ? AND username = ?",
         (todo.title, todo_id, user["username"])
@@ -60,7 +60,7 @@ def update_crud(todo_id: int, todo: Todo, user = Depends(verify_access_token)):
     }
 
 @router.delete("/todo/{todo_id}")
-def delete_crud(todo_id: int, user = Depends(verify_access_token)):
+def delete_todo(todo_id: int, user = Depends(verify_access_token)):
     cursor.execute(
         "DELETE FROM todos WHERE id = ? AND username = ?",
         (todo_id, user["username"])

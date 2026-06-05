@@ -1,0 +1,20 @@
+name: Docker Build
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+      - uses: actions/checkout@v6
+    
+      - name: Set up Docker buildx
+      - uses: docker/setup-buildx-action@v4
+      
+      - name: Build docker image
+      - uses: docker build -t fastapi-app .
+      
