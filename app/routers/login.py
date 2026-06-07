@@ -1,13 +1,15 @@
 from fastapi import APIRouter, HTTPException
-from auth import verify_password, create_access_token
-from model import LoginRequest
+from auth import verify_password, create_acess_token
+from model import User
 from database import cursor
+
 router = APIRouter()
 
+
 @router.post("/login")
-def login(user: LoginRequest):
+def login(user: User):
     cursor.execute(
-        "SELECT password FROM users WHERE username = ?",
+        "SELECT username, password FROM users WHERE username = %s",
         (user.username,)
     )
 
@@ -19,16 +21,11 @@ def login(user: LoginRequest):
             detail="Invalid credential"
         )
     
-    valid = verify_password(user.password, row[0])
+    verify_password(user.password, row[1])
 
-    if not valid:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid credential"
-        )
-
-    token = create_access_token(user.username)    
+    token = create_acess_token(user.username)
 
     return {
-        "access_token": token
+        "status": "login success",
+        "access_token": token 
     }

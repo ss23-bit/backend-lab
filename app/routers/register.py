@@ -1,34 +1,36 @@
-from fastapi import APIRouter, status, HTTPException
-from auth import hash_password
-from model import LoginRequest
+from fastapi import APIRouter, HTTPException
+from model import User
 from database import conn, cursor
-import sqlite3
+from auth import password_hash
+from psycopg.errors import UniqueViolation
+
 
 router = APIRouter()
 
-@router.post("/register", status_code=status.HTTP_201_CREATED)
-def register(user: LoginRequest):
+@router.post("/register")
+def register(user: User):
     
-    hashed_password = hash_password(user.password)
-    
+    hashed_password = password_hash(user.password)
+
     try:
         cursor.execute(
-            "INSERT INTO users (username, password) VALUES (?, ?)",
+            "INSERT INTO users (username, password) VALUES (%s, %s)",
             (user.username, hashed_password)
         )
-    
         conn.commit()
     
-    except sqlite3.IntegrityError:
+    except UniqueViolation:
+        conn.rollback()
+
         raise HTTPException(
             status_code=400,
-            detail="Username already exists"
+            detail="User already exists"
         )
-
+    
     return {
-        "status": "created"
+        "status": "Registered"
     }
-
+    
     
 
 

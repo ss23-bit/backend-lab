@@ -1,43 +1,46 @@
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi import HTTPException, Depends
+from dotenv import load_dotenv
+import os
 import jwt
 import bcrypt
 
-SECRET_KEY = "ordinarysecretkey"
+load_dotenv()
 
+SECRET_KEY = os.getenv("SECRET_KEY")
 bearer_scheme = HTTPBearer()
 
-def hash_password(password):
-    
-    hashed_password = bcrypt.hashpw(
+def password_hash(password):
+    hashed = bcrypt.hashpw(
         password.encode(),
         bcrypt.gensalt()
     ).decode()
 
-    return hashed_password
+    return hashed
 
-def verify_password(password, stored_hash):
-    
-    return bcrypt.checkpw(
+def verify_password(password, stored_hash):    
+    verified = bcrypt.checkpw(
         password.encode(),
         stored_hash.encode()
     )
 
+    if not verified:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid credential"
+        )
 
-def create_access_token(username):
-    
-    return jwt.encode(
+def create_acess_token(username):
+    payload = jwt.encode(
         {"username": username},
         SECRET_KEY,
         algorithm="HS256"
     )
 
+    return payload
 
-
-def verify_access_token(credential: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
-
-    token = credential.credentials
-
+def verify_access_token(credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
+    token = credentials.credentials
     try:
         payload = jwt.decode(
             token,
@@ -45,10 +48,17 @@ def verify_access_token(credential: HTTPAuthorizationCredentials = Depends(beare
             algorithms=["HS256"]
         )
     
-        return payload
-    
-    except Exception:
+    except jwt.InvalidSignatureError:
         raise HTTPException(
             status_code=401,
-            detail="Invalid token"
+            detail="invalid credential"
         )
+    
+    return payload["username"]
+
+
+
+
+
+    
+

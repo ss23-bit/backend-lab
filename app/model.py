@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 
-class Todo(BaseModel):
-    title: str
-
-class LoginRequest(BaseModel):
+class User(BaseModel):
     username: str
     password: str
+
+class ToDo(BaseModel):
+    title: str

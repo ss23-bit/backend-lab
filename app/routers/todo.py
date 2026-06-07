@@ -1,81 +1,51 @@
-from fastapi import APIRouter, HTTPException, status, Depends
-from database import conn, cursor
-from model import Todo
+from fastapi import APIRouter, Depends
+from model import ToDo
 from auth import verify_access_token
+from services.todo_service import get_stored_todo, store_todo, update_stored_todo, delete_stored_todo
+from services.user_service import get_user_id
+
 
 router = APIRouter()
 
-
-
-def check_not_found():
-    raise HTTPException(
-        status_code=404,
-        detail="Crud not found"
-    )
-
-@router.get("/todo")
-def get_todo(user = Depends(verify_access_token)):
-    cursor.execute(
-        "SELECT * FROM todos WHERE username = ?",
-        (user["username"],)
-    )
-
-    row = cursor.fetchall()
-
-    if row is None:
-        check_not_found()
-
-    return {
-        "id": row[0],
-        "title": row[1]
-    }
-
-@router.post("/todo", status_code=status.HTTP_201_CREATED)
-def create_todo(todo: Todo, user = Depends(verify_access_token)):
-    cursor.execute(
-        "INSERT INTO todos (title, username) VALUES (?, ?)",
-        (todo.title, user["username"])
-    )
-
-    conn.commit()
-
-    return {
-        "status": "created"
-    }
-
-@router.put("/todo/{todo_id}")
-def update_todo(todo_id: int, todo: Todo, user = Depends(verify_access_token)):
-    cursor.execute(
-        "UPDATE todos SET title = ? WHERE id = ? AND username = ?",
-        (todo.title, todo_id, user["username"])
-    )
-
-    conn.commit()
-
-    if cursor.rowcount == 0:
-        check_not_found()
-
-    return {
-        "status": "updated"
-    }
-
-@router.delete("/todo/{todo_id}")
-def delete_todo(todo_id: int, user = Depends(verify_access_token)):
-    cursor.execute(
-        "DELETE FROM todos WHERE id = ? AND username = ?",
-        (todo_id, user["username"])
-    )
-
-    conn.commit()
+@router.get("/todos/{todo_id}")
+def get_todo(
+    todo_id: int, 
+    username: str = Depends(verify_access_token)
+    ):
     
-    if cursor.rowcount == 0:
-        check_not_found()
+    user_id = get_user_id(username)
+    
+    return get_stored_todo(todo_id, user_id)
+    
 
-    return {
-        "status": "deleted"
-    }
+@router.post("/todos")
+def create_todo(
+    todo: ToDo, 
+    username: str = Depends(verify_access_token)
+    ):
 
+    user_id = get_user_id(username)
 
+    return store_todo(todo.title, user_id) 
 
+@router.put("/todos/{todo_id}")
+def update_todo(
+    todo: ToDo,
+    todo_id: int, 
+    username: str = Depends(verify_access_token)
+    ):
 
+    user_id = get_user_id(username)
+
+    return update_stored_todo(todo.title, todo_id, user_id)
+
+@router.delete("/todos/{todo_id}")
+def delete_todo(
+    todo_id: int, 
+    username: str = Depends(verify_access_token)
+    ):
+
+    user_id = get_user_id(username)
+
+    return delete_stored_todo(todo_id, user_id)
     
