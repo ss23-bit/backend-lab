@@ -1,16 +1,15 @@
-emails = [
-    "a@test.com",
-    "b@test.com",
-    "a@test.com"
-]
+class LoginTracker:
+    def __init__(self):
+        
+        self.counts = {}
+    def failed_login(self, name):
+        self.counts[name] = self.counts.get(name, 0) + 1
+        return self.counts[name]
 
-seen = set()
-duplicates = []
+tracker = LoginTracker()
 
-for email in emails:
-    if email not in seen:
-        seen.add(email)
-    else:
-        duplicates.append(email)
-print(duplicates)
-    
+tracker.failed_login("alice")
+tracker.failed_login("alice")
+tracker.failed_login("bob")
+
+print(tracker.failed_login("joe"), tracker.failed_login("joe"))

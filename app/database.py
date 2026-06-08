@@ -1,16 +1,26 @@
 from dotenv import load_dotenv
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base 
 import os
-import psycopg
+
 
 load_dotenv()
 
-conn = psycopg.connect(
-    host=os.getenv("DB_HOST"),
-    name=os.getenv("DB_NAME"),
-    user=os.getenv("DB_USER"),
-    password=os.getenv("DB_PASSWORD")
+DATABASE_URL = (
+    f"postgresql+psycopg://"
+    f"{os.getenv('DB_USER')}:"
+    f"{os.getenv('DB_PASSWORD')}@"
+    f"{os.getenv('DB_HOST')}/"
+    f"{os.getenv('DB_NAME')}"
 )
 
-print(os.getenv("DB_HOST"))
+engine = create_engine(DATABASE_URL)
 
-cursor = conn.cursor()
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
+
+Base = declarative_base()
+
