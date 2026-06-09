@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
-from model import User
-from database import conn, cursor
+from services.user_service import create_user
+from schemas import UserCreate
 from auth import password_hash
 from psycopg.errors import UniqueViolation
 
@@ -8,24 +8,11 @@ from psycopg.errors import UniqueViolation
 router = APIRouter()
 
 @router.post("/register")
-def register(user: User):
+def register(user: UserCreate):
     
     hashed_password = password_hash(user.password)
 
-    try:
-        cursor.execute(
-            "INSERT INTO users (username, password) VALUES (%s, %s)",
-            (user.username, hashed_password)
-        )
-        conn.commit()
-    
-    except UniqueViolation:
-        conn.rollback()
-
-        raise HTTPException(
-            status_code=400,
-            detail="User already exists"
-        )
+    create_user(user.username, hashed_password)
     
     return {
         "status": "Registered"

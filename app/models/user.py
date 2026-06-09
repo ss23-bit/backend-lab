@@ -1,23 +1,27 @@
-from sqlalchemy import Column
-from sqlalchemy import Integer 
-from sqlalchemy import String
+from __future__ import annotations
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from database import Base
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from models.todo import Todo
 
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(
-        Integer,
+    id: Mapped[int] = mapped_column(   
         primary_key=True
     )
     
-    username = Column(
-        String,
+    username: Mapped[str] = mapped_column(
         unique=True,
         nullable=False
     )
     
-    password = Column(
-        String,
+    password: Mapped[str] = mapped_column(
         nullable=False
+    )
+
+    todos: Mapped["Todo"] = relationship(
+        back_populates="user"
     )

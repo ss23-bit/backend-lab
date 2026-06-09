@@ -1,29 +1,25 @@
 from fastapi import APIRouter, HTTPException
 from auth import verify_password, create_acess_token
-from model import User
-from database import cursor
+from schemas import UserCreate
+from services.user_service import get_user 
 
 router = APIRouter()
 
 
 @router.post("/login")
-def login(user: User):
-    cursor.execute(
-        "SELECT username, password FROM users WHERE username = %s",
-        (user.username,)
-    )
+def login(user: UserCreate):
 
-    row = cursor.fetchone()
+    stored_user = get_user(user.username)
 
-    if row is None:
+    if stored_user is None:
         raise HTTPException(
             status_code=401,
             detail="Invalid credential"
         )
     
-    verify_password(user.password, row[1])
+    verify_password(user.password, stored_user.password)
 
-    token = create_acess_token(user.username)
+    token = create_acess_token(stored_user.username)
 
     return {
         "status": "login success",

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
-from model import ToDo
+from schemas import ToDo
 from auth import verify_access_token
 from services.todo_service import get_stored_todo, store_todo, update_stored_todo, delete_stored_todo
-from services.user_service import get_user_id
+from services.user_service import get_user
 
 
 router = APIRouter()
@@ -13,9 +13,9 @@ def get_todo(
     username: str = Depends(verify_access_token)
     ):
     
-    user_id = get_user_id(username)
+    user = get_user(username)
     
-    return get_stored_todo(todo_id, user_id)
+    return get_stored_todo(todo_id, user.id)
     
 
 @router.post("/todos")
@@ -24,9 +24,9 @@ def create_todo(
     username: str = Depends(verify_access_token)
     ):
 
-    user_id = get_user_id(username)
+    user = get_user(username)
 
-    return store_todo(todo.title, user_id) 
+    return store_todo(todo.title, user.id) 
 
 @router.put("/todos/{todo_id}")
 def update_todo(
@@ -35,9 +35,9 @@ def update_todo(
     username: str = Depends(verify_access_token)
     ):
 
-    user_id = get_user_id(username)
+    user = get_user(username)
 
-    return update_stored_todo(todo.title, todo_id, user_id)
+    return update_stored_todo(todo.title, todo_id, user.id)
 
 @router.delete("/todos/{todo_id}")
 def delete_todo(
@@ -45,7 +45,7 @@ def delete_todo(
     username: str = Depends(verify_access_token)
     ):
 
-    user_id = get_user_id(username)
+    user = get_user(username)
 
-    return delete_stored_todo(todo_id, user_id)
+    return delete_stored_todo(todo_id, user.id)
     
